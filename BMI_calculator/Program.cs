@@ -1,62 +1,40 @@
 ﻿using System;
 
-class Program
+abstract class Calculator
 {
-    static void Main()
+    public abstract void Calculate(double weight, double height);
+}
+
+class BMICalculator : Calculator
+{
+    public override void Calculate(double weight, double height)
     {
-        Console.WriteLine("BMI Calculator");
-        Console.WriteLine("==============");
-
-        Console.Write("Enter your weight in kilograms: ");
-        double weight = ReadDoubleInput();
-
-        Console.Write("Enter your height in meters: ");
-        double height = ReadDoubleInput();
-
         double bmi = CalculateBMI(weight, height);
         string category = GetBMICategory(bmi);
 
         Console.WriteLine($"Your BMI is: {bmi:F2}");
         Console.WriteLine($"BMI Category: {category}");
-
-        Console.WriteLine("\nWhat would you like to do next?");
-        Console.WriteLine("1. Calculate BMI again");
-        Console.WriteLine("2. Get BMI range information");
-        Console.WriteLine("3. Calculate Ideal Weight");
-        Console.WriteLine("4. Exit");
-        Console.Write("Enter your choice (1-4): ");
-        int choice = ReadIntInput(1, 4);
-
-        switch (choice)
-        {
-            case 1:
-                Console.Clear();
-                Main();
-                break;
-            case 2:
-                Console.WriteLine("\nBMI Ranges");
-                Console.WriteLine("==========");
-                PrintBMIRanges();
-                Console.ReadLine();
-                break;
-            case 3:
-                Console.WriteLine("\nIdeal Weight Calculation");
-                Console.WriteLine("========================");
-                CalculateIdealWeight(height);
-                Console.ReadLine();
-                break;
-            case 4:
-                Console.WriteLine("\nThank you for using the BMI Calculator. Goodbye!");
-                break;
-        }
     }
 
-    static double CalculateBMI(double weight, double height)
+    private double CalculateBMI(double weight, double height)
     {
-        return weight / (height * height);
+        double weightInPounds = ConvertKilogramsToPounds(weight);
+        double heightInInches = ConvertMetersToInches(height);
+
+        return (weightInPounds / (heightInInches * heightInInches)) * 703; // Multiply by 703 for the BMI calculation in the US customary units
     }
 
-    static string GetBMICategory(double bmi)
+    private double ConvertKilogramsToPounds(double kilograms)
+    {
+        return kilograms * 2.20462; // Conversion factor for kilograms to pounds
+    }
+
+    private double ConvertMetersToInches(double meters)
+    {
+        return meters * 39.3701; // Conversion factor for meters to inches
+    }
+
+    private string GetBMICategory(double bmi)
     {
         if (bmi < 18.5)
             return "Underweight";
@@ -67,40 +45,42 @@ class Program
         else
             return "Obese";
     }
+}
 
-    static void PrintBMIRanges()
+class Program
+{
+    static void Main()
     {
-        Console.WriteLine("BMI Categories:");
-        Console.WriteLine("---------------");
-        Console.WriteLine("Underweight: Less than 18.5");
-        Console.WriteLine("Normal weight: 18.5 - 24.9");
-        Console.WriteLine("Overweight: 25 - 29.9");
-        Console.WriteLine("Obese: 30 or greater");
-    }
+        Console.WriteLine("BMI Calculator");
+        Console.WriteLine("==============");
 
-    static void CalculateIdealWeight(double height)
-    {
-        Console.Write("Enter your gender (M/F): ");
-        string gender = ReadGenderInput();
+        bool retry = false;
 
-        double idealWeight;
-        if (gender.ToUpper() == "M")
-            idealWeight = 22 * (height * height);
-        else
-            idealWeight = 21 * (height * height);
-
-        Console.WriteLine($"Your ideal weight is: {idealWeight:F2} kg");
-    }
-
-    static string ReadGenderInput()
-    {
-        string gender = Console.ReadLine().ToUpper();
-        while (gender != "M" && gender != "F")
+        do
         {
-            Console.Write("Invalid input. Please enter 'M' or 'F': ");
-            gender = Console.ReadLine().ToUpper();
+            Console.Write("Enter your weight in pounds: ");
+            double weight = ReadDoubleInput();
+
+            Console.Write("Enter your height in inches: ");
+            double height = ReadDoubleInput();
+
+            Calculator calculator = new BMICalculator();
+            calculator.Calculate(weight, height);
+
+            Console.WriteLine("\nWhat would you like to do next?");
+            Console.WriteLine("1. Calculate BMI again");
+            Console.WriteLine("2. Exit");
+            Console.Write("Enter your choice (1-2): ");
+            int choice = ReadIntInput(1, 2);
+
+            retry = (choice == 1);
+
+            Console.Clear();
         }
-        return gender;
+        while (retry);
+
+        Console.WriteLine("Thank you for using the BMI Calculator. Goodbye!");
+        Console.ReadLine();
     }
 
     static double ReadDoubleInput()
